@@ -225,19 +225,19 @@ export default function SecretSantaForm() {
                   <ol className="text-gray-600 text-left list-decimal pl-6 space-y-2">
                     {language === 'en' ? (
                       <>
-                        <li>Enter your group name, location, gift price limit, and event date</li>
-                        <li>Add all participants with their names and emails</li>
-                        <li>Use the exclusion toggle if certain people shouldn't be matched</li>
-                        <li>Click "Santa Shuffle" to generate random assignments</li>
-                        <li>Each participant will receive their match by email</li>
+                        <li>Enter your group name, location, gift price limit, and event date;</li>
+                        <li>Add all participants with their names and emails;</li>
+                        <li>Use the exclusion toggle if certain people shouldn't be matched;</li>
+                        <li>Click "Santa Shuffle" to generate random assignments;</li>
+                        <li>Each participant will receive their match by email.</li>
                       </>
                     ) : (
                       <>
-                        <li>Insira o nome do grupo, localização, limite de preço da prenda e data do evento</li>
-                        <li>Adicione todos os participantes, inserindo os seus nomes e emails</li>
-                        <li>Use a opção de exclusão se certas pessoas não devem ser sorteadas juntas</li>
-                        <li>Clique em "Santa Shuffle" para gerar o sorteio aleatório</li>
-                        <li>Cada participante receberá o seu sorteio por email</li>
+                        <li>Insere o nome do grupo, localização, limite de preço da prenda e data do evento;</li>
+                        <li>Adiciona todos os participantes, inserindo os seus nomes e emails;</li>
+                        <li>Usa a opção de exclusão se certas pessoas não devem ser sorteadas juntas;</li>
+                        <li>Clique em "Santa Shuffle" para gerar o sorteio aleatório;</li>
+                        <li>Cada participante receberá o seu sorteio por email.</li>
                       </>
                     )}
                   </ol>
@@ -275,7 +275,7 @@ export default function SecretSantaForm() {
                   </Label>
                   <Input
                     id="groupName"
-                    placeholder={language === 'en' ? 'Enter group name' : 'Digita o nome do grupo'}
+                    placeholder={language === 'en' ? 'Enter group name' : 'Insere o nome do grupo'}
                     value={groupName}
                     onChange={(e) => setGroupName(e.target.value)}
                     required
@@ -305,7 +305,7 @@ export default function SecretSantaForm() {
                     <Input
                       id="location"
                       className="pl-8"
-                      placeholder={language === 'en' ? 'Enter event location' : 'Digita a localização'}
+                      placeholder={language === 'en' ? 'Enter event location' : 'Insere a localização'}
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       required
@@ -337,7 +337,7 @@ export default function SecretSantaForm() {
                       id="maxPrice"
                       type="number"
                       className="pl-8"
-                      placeholder={language === 'en' ? 'Enter maximum price' : 'Digita o preço máximo'}
+                      placeholder={language === 'en' ? 'Enter maximum price' : 'Insere o preço máximo'}
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value)}
                       min="0"
@@ -430,7 +430,7 @@ export default function SecretSantaForm() {
                               </Label>
                               <Input
                                 id={`name-${index}`}
-                                placeholder={language === 'en' ? 'Enter name' : 'Digita o nome'}
+                                placeholder={language === 'en' ? 'Enter name' : 'Insere o nome'}
                                 value={participant.name}
                                 onChange={(e) => updateParticipant(index, 'name', e.target.value)}
                                 required
@@ -455,7 +455,7 @@ export default function SecretSantaForm() {
                               <Input
                                 id={`email-${index}`}
                                 type="email"
-                                placeholder={language === 'en' ? 'Enter email' : 'Digita o email'}
+                                placeholder={language === 'en' ? 'Enter email' : 'Insere o email'}
                                 value={participant.email}
                                 onChange={(e) => updateParticipant(index, 'email', e.target.value)}
                                 required
@@ -485,7 +485,7 @@ export default function SecretSantaForm() {
                                 }}
                               />
                               <Label>
-                                {language === 'en' ? 'Can\'t be secret santa to... ' : 'Não pode ser Pai Natal secreto de...'}
+                                {language === 'en' ? 'Can\'t be secret santa to... ' : 'Não pode ser amigo secreto de...'}
                               </Label>
                             </div>
                             {participant.showExclusions && (
