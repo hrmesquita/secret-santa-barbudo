@@ -1,101 +1,504 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import React, { useState } from 'react';
+import { Plus, Trash2, Send, AlertCircle, CalendarIcon, MapPin, Gift, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { validateAndSanitizeInput } from '@/utils/validation';
+
+const MAX_PARTICIPANTS = 30
+
+export default function SecretSantaForm() {
+  const [groupName, setGroupName] = useState('');
+  const [location, setLocation] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [eventDate, setEventDate] = useState();
+  const [language, setLanguage] = useState('en');
+  const [participants, setParticipants] = useState([
+    { name: '', email: '', excludedParticipants: new Set(), showExclusions: false },
+    { name: '', email: '', excludedParticipants: new Set(), showExclusions: false },
+  ]);
+  const [error, setError] = useState('');
+
+  const formatDate = (date: string | number | Date) => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-PT', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const addParticipant = () => {
+    if (participants.length > 30) {
+      setError(language === 'en'
+        ? 'Maximum 30 participants allowed'
+        : 'Máximo de 30 participantes permitido'
+      );
+      return;
+    }
+    setError('');
+    setParticipants([
+      ...participants,
+      {
+        name: '',
+        email: '',
+        excludedParticipants: new Set<string>(),
+        showExclusions: false
+      }
+    ]);
+  };
+
+  const removeParticipant = (index: number) => {
+    if (participants.length <= 2) {
+      setError(language === 'en' ? 'You need at least 2 participants' : 'Precisas de pelo menos 2 participantes');
+      return;
+    }
+    setError('');
+    const newParticipants = participants.filter((_, i) => i !== index);
+    setParticipants(newParticipants);
+  };
+
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    setError('');
+
+    const formData = {
+      groupName,
+      location,
+      maxPrice,
+      eventDate,
+      participants
+    };
+
+    if (!groupName.trim()) {
+      setError(language === 'en' ? 'Group name is required' : 'Nome do grupo necessário');
+      return;
+    }
+
+    if (!location.trim()) {
+      setError(language === 'en' ? 'Location is required' : 'Localização necessária');
+      return;
+    }
+
+    if (!maxPrice || Number(maxPrice) <= 0) {
+      setError(language === 'en' ? 'Please enter a valid price' : 'Por favor introduza um valor válido');
+      return;
+    }
+
+    if (!eventDate) {
+      setError(language === 'en' ? 'Event date is required' : 'Data do evento necessária');
+      return;
+    }
+
+    const invalidParticipants = participants.filter(
+      p => !p.name.trim() || !p.email.trim()
+    );
+
+    if (invalidParticipants.length > 0) {
+      setError(language === 'en' ? 'All participants fields required' : 'Todos os campos de participantes necessários');
+      return;
+    }
+
+    const validation = validateAndSanitizeInput.form(formData, language);
+
+    if (!validation.isValid) {
+      setError(validation.errors.join('. '));
+      return;
+    }
+
+    console.log('Sanitized and Validated Data:', formData);
+
+    alert(language === 'en' ? 'Data submitted successfully!' : 'Dados enviados com sucesso!');
+  };
+
+  const updateParticipant = (index: number, field: any, value: any) => {
+    setParticipants(participants.map((participant, i) => {
+      if (i === index) {
+        return { ...participant, [field]: value };
+      }
+      return participant;
+    }));
+  };
+
+  const addExclusion = (participantIndex: number, excludedEmail: string) => {
+    if (!excludedEmail || participantIndex === undefined) return;
+    
+    setParticipants(participants.map((participant, index) => {
+      if (index === participantIndex) {
+        return {
+          ...participant,
+          excludedParticipants: new Set([
+            ...(participant.excludedParticipants || new Set()),
+            excludedEmail
+          ])
+        };
+      }
+      return participant;
+    }));
+  };
+
+  const removeExclusion = (participantIndex: number, excludedEmail: string) => {
+    if (!excludedEmail || participantIndex === undefined) return;
+  
+    setParticipants(participants.map((participant, index) => {
+      if (index === participantIndex) {
+        const newExclusions = new Set(participant.excludedParticipants || new Set());
+        newExclusions.delete(excludedEmail);
+        return {
+          ...participant,
+          excludedParticipants: newExclusions
+        };
+      }
+      return participant;
+    }));
+  };
+
+  const getAvailableExclusions = (currentIndex: number | undefined) => {
+    if (currentIndex === undefined) return [];
+    const currentParticipant = participants[currentIndex];
+
+    return participants.filter((p, idx) =>
+      idx !== currentIndex &&
+      p.email &&
+      !currentParticipant.excludedParticipants.has(p.email)
+    );
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      {/* Language Toggle */}
+      <div className="fixed top-4 right-4 flex items-center gap-2">
+        <Globe className="h-4 w-4" />
+        <Select value={language} onValueChange={setLanguage}>
+          <SelectTrigger className="w-[110px]">
+            <SelectValue>
+              {language === 'en' ? 'English' : 'Português'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="pt">Português</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <form onSubmit={handleSubmit} className="w-full max-w-2xl m-4">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl">
+              {language === 'en' ? 'Create Secret Santa Group' : 'Criar Grupo do Amigo Secreto'}
+            </CardTitle>
+            <CardDescription>
+              {language === 'en'
+                ? 'Set up your Secret Santa event details and add participants.'
+                : 'Configura os detalhes do teu evento de Amigo Secreto e adiciona os participantes.'}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            {/* Event Details Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="groupName">
+                  {language === 'en' ? 'Group Name' : 'Nome do Grupo'}
+                </Label>
+                <Input
+                  id="groupName"
+                  placeholder={language === 'en' ? 'Enter group name' : 'Digita o nome do grupo'}
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                  required
+                  onInvalid={(e) => {
+                    e.preventDefault();
+                    const input = e.target as HTMLInputElement;
+                    input.setCustomValidity(
+                      language === 'en'
+                        ? 'Please enter a valid group name'
+                        : 'Por favor, insira um nome de grupo válido'
+                    );
+                  }}
+                  onInput={(e) => {
+                    // Clear the custom message when user starts typing again
+                    const input = e.target as HTMLInputElement;
+                    input.setCustomValidity('');
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="location">
+                  {language === 'en' ? 'Location' : 'Localização'}
+                </Label>
+                <div className="relative">
+                  <MapPin className="absolute left-2 top-3 h-4 w-4 text-gray-500" />
+                  <Input
+                    id="location"
+                    className="pl-8"
+                    placeholder={language === 'en' ? 'Enter event location' : 'Digita a localização'}
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    required
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      const input = e.target as HTMLInputElement;
+                      input.setCustomValidity(
+                        language === 'en'
+                          ? 'Please enter a valid location'
+                          : 'Por favor, insira uma localização válida'
+                      );
+                    }}
+                    onInput={(e) => {
+                      // Clear the custom message when user starts typing again
+                      const input = e.target as HTMLInputElement;
+                      input.setCustomValidity('');
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxPrice">
+                  {language === 'en' ? 'Gift Price Limit' : 'Limite de Preço'}
+                </Label>
+                <div className="relative">
+                  <Gift className="absolute left-2 top-3 h-4 w-4 text-gray-500" />
+                  <Input
+                    id="maxPrice"
+                    type="number"
+                    className="pl-8"
+                    placeholder={language === 'en' ? 'Enter maximum price' : 'Digita o preço máximo'}
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    min="0"
+                    step="0.01"
+                    required
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      const input = e.target as HTMLInputElement;
+                      input.setCustomValidity(
+                        language === 'en'
+                          ? 'Please enter a valid price'
+                          : 'Por favor, insira um preço válido'
+                      );
+                    }}
+                    onInput={(e) => {
+                      // Clear the custom message when user starts typing again
+                      const input = e.target as HTMLInputElement;
+                      input.setCustomValidity('');
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>
+                  {language === 'en' ? 'Event Date' : 'Data do Evento'}
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {eventDate ? formatDate(eventDate) : language === 'en' ? 'Pick a date' : 'Escolhe uma data'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={eventDate}
+                      onSelect={setEventDate}
+                      initialFocus
+                      disabled={(date) => date < new Date()}
+                      required
+                      onInvalid={(e) => {
+                        e.preventDefault();
+                        const input = e.target as HTMLInputElement;
+                        input.setCustomValidity(
+                          language === 'en'
+                            ? 'Please enter a valid date'
+                            : 'Por favor, insira uma data válida'
+                        );
+                      }}
+                      onInput={(e) => {
+                        // Clear the custom message when user starts typing again
+                        const input = e.target as HTMLInputElement;
+                        input.setCustomValidity('');
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* Participants Section */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">
+                  {language === 'en' ? 'Participants' : 'Participantes'} ({participants.length}/20)
+                </h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addParticipant}
+                  disabled={participants.length >= 20}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {language === 'en' ? 'Add Participant' : 'Adicionar Participante'}
+                </Button>
+              </div>
+
+              <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-2">
+                {participants.map((participant, index) => (
+                  <Card key={index}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1 space-y-4">
+                          <div>
+                            <Label htmlFor={`name-${index}`}>
+                              {language === 'en' ? 'Name' : 'Nome'}
+                            </Label>
+                            <Input
+                              id={`name-${index}`}
+                              placeholder={language === 'en' ? 'Enter name' : 'Digita o nome'}
+                              value={participant.name}
+                              onChange={(e) => updateParticipant(index, 'name', e.target.value)}
+                              required
+                              onInvalid={(e) => {
+                                e.preventDefault();
+                                const input = e.target as HTMLInputElement;
+                                input.setCustomValidity(
+                                  language === 'en'
+                                    ? 'Please enter a valid name'
+                                    : 'Por favor, insira um nome válido'
+                                );
+                              }}
+                              onInput={(e) => {
+                                // Clear the custom message when user starts typing again
+                                const input = e.target as HTMLInputElement;
+                                input.setCustomValidity('');
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`email-${index}`}>Email</Label>
+                            <Input
+                              id={`email-${index}`}
+                              type="email"
+                              placeholder={language === 'en' ? 'Enter email' : 'Digita o email'}
+                              value={participant.email}
+                              onChange={(e) => updateParticipant(index, 'email', e.target.value)}
+                              required
+                              onInvalid={(e) => {
+                                e.preventDefault();
+                                const input = e.target as HTMLInputElement;
+                                input.setCustomValidity(
+                                  language === 'en'
+                                    ? 'Please enter a valid email address'
+                                    : 'Por favor, insira um email válido'
+                                );
+                              }}
+                              onInput={(e) => {
+                                // Clear the custom message when user starts typing again
+                                const input = e.target as HTMLInputElement;
+                                input.setCustomValidity('');
+                              }}
+                            />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={participant.showExclusions}
+                              onCheckedChange={(checked: boolean) => {
+                                const newParticipants = [...participants];
+                                newParticipants[index].showExclusions = checked;
+                                setParticipants(newParticipants);
+                              }}
+                            />
+                            <Label>
+                              {language === 'en' ? 'Can\'t be secret santa to... ' : 'Não pode ser Pai Natal secreto de...'}
+                            </Label>
+                          </div>
+                          {participant.showExclusions && (
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {Array.from(participant.excludedParticipants || new Set()).map((email) => (
+                                  <Badge key={email} variant="secondary" className="flex items-center gap-1">
+                                    {participants.find(p => p.email === email)?.name || email}
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-4 w-4 p-0 hover:bg-transparent"
+                                      onClick={() => removeExclusion(index, email)}
+                                    >
+                                      X
+                                    </Button>
+                                  </Badge>
+                                ))}
+                              </div>
+                              <Select
+                                onValueChange={(value: any) => addExclusion(index, value)}
+                                disabled={getAvailableExclusions(index).length === 0}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder={
+                                    language === 'en'
+                                      ? 'Select participant to exclude'
+                                      : 'Seleciona o participante a excluir'
+                                  } />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {getAvailableExclusions(index).map((p) => (
+                                    <SelectItem key={p.email} value={p.email}>
+                                      {p.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeParticipant(index)}
+                          className="mt-8"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+
+          <CardFooter>
+            <Button type="submit" className="w-full">
+              <Send className="w-4 h-4 mr-2" />
+              {'Santa Shuffle'}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
     </div>
   );
 }
