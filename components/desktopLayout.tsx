@@ -18,7 +18,7 @@ function DesktopLayout() {
   const [groupName, setGroupName] = useState('');
   const [location, setLocation] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [eventDate, setEventDate] = useState();
+  const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
   const [language, setLanguage] = useState('en');
   const [participants, setParticipants] = useState([
     { name: '', email: '', excludedParticipants: new Set(), showExclusions: false },
@@ -372,23 +372,10 @@ function DesktopLayout() {
                       <Calendar
                         mode="single"
                         selected={eventDate}
-                        onSelect={setEventDate}
+                        onSelect={(day) => setEventDate(day || undefined)}
                         initialFocus
                         disabled={(date) => date < new Date()}
                         required
-                        onInvalid={(e) => {
-                          e.preventDefault();
-                          const input = e.target as HTMLInputElement;
-                          input.setCustomValidity(
-                            language === 'en'
-                              ? 'Please enter a valid date'
-                              : 'Por favor, insira uma data válida'
-                          );
-                        }}
-                        onInput={(e) => {
-                          const input = e.target as HTMLInputElement;
-                          input.setCustomValidity('');
-                        }}
                       />
                     </PopoverContent>
                   </Popover>
