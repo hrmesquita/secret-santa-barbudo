@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import Image from 'next/image';
 
 const MAX_PARTICIPANTS = 30;
 
@@ -189,11 +190,11 @@ function MobileLayout() {
         </Select>
       </div>
 
-      <img 
-        src="https://i.ibb.co/M73LTM7/Remove-bg-ai-1731604328101.png"
+      <Image 
+        src="/img/secret-santa-logo.png"
         alt="Secret Santa Logo"
-        width={200}
-        height={200}
+        width={250}
+        height={250}
         className="mx-auto mb-6"
       />
 
@@ -216,19 +217,18 @@ function MobileLayout() {
                         <li>Enter your group name, location, gift price limit, and event date;</li>
                         <li>Add all participants with their names and emails;</li>
                         <li>Use the exclusion toggle if certain people shouldn't be matched;</li>
-                        <li>Click "Santa Shuffle" to generate random assignments;</li>
-                        <li>Each participant will receive their match by email.</li>
+                        <li>Click "Santa Shuffle" to generate random assignments.</li>
                     </>
                 ) : (
                     <>
                         <li>Insere o nome do grupo, localização, limite de preço da prenda e data do evento;</li>
                         <li>Adiciona todos os participantes, inserindo os seus nomes e emails;</li>
                         <li>Usa a opção de exclusão se certas pessoas não devem ser sorteadas juntas;</li>
-                        <li>Clique em "Santa Shuffle" para gerar o sorteio aleatório;</li>
-                        <li>Cada participante receberá o seu sorteio por email.</li>
+                        <li>Seleciona "Santa Shuffle" para gerar o sorteio aleatório.</li>
                     </>
                 )}
             </ol>
+            <p className="text-sm text-gray-600"><b>{language === 'en' ? 'Each participant will receive their match by email.' : 'Cada participante receberá o seu sorteio por email.'}</b></p>
             <h2 className="font-bold text-red-600">
                 {language === 'en' ? 'Merry Christmas! 🎄' : 'Feliz Natal! 🎄'}
             </h2>
@@ -422,7 +422,7 @@ function MobileLayout() {
       <div className="mt-6 text-center">
         <a href="https://www.buymeacoffee.com/hrainhamesquita">
           <Button type="button" variant="outline" size="sm">
-            🍕 Buy me a slice of pizza
+            🍕 {language === 'en' ? 'Buy me a slice of pizza' : 'Compra-me uma fatia de pizza'}
           </Button>
         </a>
       </div>

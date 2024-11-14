@@ -11,6 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import Image from 'next/image';
 
 const MAX_PARTICIPANTS = 30;
 
@@ -18,7 +19,7 @@ function DesktopLayout() {
   const [groupName, setGroupName] = useState('');
   const [location, setLocation] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
+  const [eventDate, setEventDate] = useState();
   const [language, setLanguage] = useState('en');
   const [participants, setParticipants] = useState([
     { name: '', email: '', excludedParticipants: new Set(), showExclusions: false },
@@ -192,13 +193,13 @@ function DesktopLayout() {
 
       <div className="flex items-center gap-24 p-8">
         {/* Left side content */}
-        <div className="w-[600px]">
-          <div className="space-y-12">
-            <img 
-              src="https://i.ibb.co/M73LTM7/Remove-bg-ai-1731604328101.png"
+        <div className="w-[600px] h-[1000px]">
+          <div className="space-y-1">
+            <Image 
+              src="/img/secret-santa-logo.png"
               alt="Secret Santa Logo"
-              width={300}
-              height={300}
+              width={400}
+              height={400}
               className="mx-auto"
             />
             
@@ -225,20 +226,20 @@ function DesktopLayout() {
                         <li>Enter your group name, location, gift price limit, and event date;</li>
                         <li>Add all participants with their names and emails;</li>
                         <li>Use the exclusion toggle if certain people shouldn't be matched;</li>
-                        <li>Click "Santa Shuffle" to generate random assignments;</li>
-                        <li>Each participant will receive their match by email.</li>
+                        <li>Click "Santa Shuffle" to generate random assignments.</li>
                       </>
                     ) : (
                       <>
                         <li>Insere o nome do grupo, localização, limite de preço da prenda e data do evento;</li>
                         <li>Adiciona todos os participantes, inserindo os seus nomes e emails;</li>
                         <li>Usa a opção de exclusão se certas pessoas não devem ser sorteadas juntas;</li>
-                        <li>Clique em "Santa Shuffle" para gerar o sorteio aleatório;</li>
-                        <li>Cada participante receberá o seu sorteio por email.</li>
+                        <li>Seleciona "Santa Shuffle" para gerar o sorteio aleatório.</li>
                       </>
                     )}
                   </ol>
                 </div>
+
+                <div><p className="text-base text-gray-600"><b>{language === 'en' ? 'Each participant will receive their match by email.' : 'Cada participante receberá o seu sorteio por email.'}</b></p></div>
 
                 <h2 className="text-3xl font-bold text-red-600 mt-12">
                   {language === 'en' ? 'Merry Christmas! 🎄' : 'Feliz Natal! 🎄'}
@@ -249,7 +250,7 @@ function DesktopLayout() {
         </div>
 
       {/* Right side form */}
-      <div className="w-[600px]">
+      <div className="w-[600px] h-[1000px]">
       <form onSubmit={handleSubmit} className="w-full">
           <Card className="shadow-lg">
             <CardHeader>
@@ -372,10 +373,23 @@ function DesktopLayout() {
                       <Calendar
                         mode="single"
                         selected={eventDate}
-                        onSelect={(day) => setEventDate(day || undefined)}
+                        onSelect={setEventDate}
                         initialFocus
                         disabled={(date) => date < new Date()}
                         required
+                        onInvalid={(e) => {
+                          e.preventDefault();
+                          const input = e.target as HTMLInputElement;
+                          input.setCustomValidity(
+                            language === 'en'
+                              ? 'Please enter a valid date'
+                              : 'Por favor, insira uma data válida'
+                          );
+                        }}
+                        onInput={(e) => {
+                          const input = e.target as HTMLInputElement;
+                          input.setCustomValidity('');
+                        }}
                       />
                     </PopoverContent>
                   </Popover>
@@ -547,7 +561,11 @@ function DesktopLayout() {
       </div>
       {/* Buy me a confee donation button */}
       <div className="fixed bottom-4 right-4 flex items-center gap-2">
-        <a href="https://www.buymeacoffee.com/hrainhamesquita"><Button type="button"> 🍕 Buy me a slice of pizza</Button></a>
+        <a href="https://www.buymeacoffee.com/hrainhamesquita">
+          <Button type="button">
+            🍕 {language === 'en' ? 'Buy me a slice of pizza' : 'Compra-me uma fatia de pizza'}
+          </Button>
+        </a>
       </div>
     </div>
   )
