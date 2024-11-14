@@ -562,6 +562,10 @@ export default function SecretSantaForm() {
         </form>
       </div>
       </div>
+      {/* Buy me a confee donation button */}
+      <div className="fixed bottom-4 right-4 flex items-center gap-2">
+        <a href="https://www.buymeacoffee.com/hrainhamesquita"><Button type="button"> 🍕 Buy me a slice of pizza</Button></a>
+      </div>
     </div>
   );
 }
